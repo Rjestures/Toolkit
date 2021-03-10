@@ -1,0 +1,3 @@
+include ':startupkit'
+include ':app'
+rootProject.name = "Toolkit"
