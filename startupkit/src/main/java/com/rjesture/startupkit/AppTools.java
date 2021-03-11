@@ -276,10 +276,7 @@ public class AppTools {
 
         //...initialize the imageView form infalted layout
         ImageView gifImageView = dialog.findViewById(R.id.custom_loading_imageView);
-        Glide.with(activity)
-                .load(drawable_icon)
-                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
-                .into(new DrawableImageViewTarget(gifImageView));
+        Glide.with(activity).asGif().load(drawable_icon).into(gifImageView);
 
         //...finaly show it
         dialog.show();
