@@ -20,7 +20,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.DateFormat;
@@ -274,20 +276,10 @@ public class AppTools {
 
         //...initialize the imageView form infalted layout
         ImageView gifImageView = dialog.findViewById(R.id.custom_loading_imageView);
-
-        /*
-        it was never easy to load gif into an ImageView before Glide or Others library
-        and for doing this we need DrawableImageViewTarget to that ImageView
-        */
-        GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
-        //...now load that gif which we put inside the drawble folder here with the help of Glide
-
         Glide.with(activity)
                 .load(drawable_icon)
-                .placeholder(drawable_icon)
-                .centerCrop()
-                .crossFade()
-                .into(imageViewTarget);
+                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
+                .into(new DrawableImageViewTarget(gifImageView));
 
         //...finaly show it
         dialog.show();
