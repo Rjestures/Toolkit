@@ -7,10 +7,13 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -18,6 +21,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -282,10 +287,75 @@ public class AppTools {
         dialog.show();
     }
 
-    //..also create a method which will hide the dialog when some work is done
+    public static String getAppVersion(Activity context) {
+        String latestVersion = "";
+        try {
+            PackageManager manager = context.getPackageManager();
+            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
+            latestVersion = String.valueOf(info.versionName);
+        } catch (Exception e) {
+            handleCatch(e, context);
+        }
+        return latestVersion;
+    }
+
     public static void hideGifDialog() {
         dialog.dismiss();
     }
-    //..we need the context else we can not create the dialog so get context in constructor
-
+    public static String removeSpecial(String string){
+        try {
+            return string.replaceAll("[^a-zA-Z0-9]", "");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static String readTimeStampDate(String timeStampDate) {
+        try {
+            Date date = new Date(Long.parseLong(timeStampDate));
+            SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy hh:mm aa");
+            String myDate = format.format(date);
+            return myDate;
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return "";
+    }
+    public static int getDays(String startDate) {
+        try {
+            long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm aa");
+            long begin = dateFormat.parse(startDate).getTime();
+            long end = new Date().getTime(); // 2nd date want to compare
+            long diff = (end - begin) / (MILLIS_PER_DAY);
+            setLog("Days_Ago", "days " + diff);
+            return (int) diff;
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return 0;
+    }
+    public static int getDays(String startDate, @NonNull String pattern) {
+        try {
+            long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+            SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
+            long begin = dateFormat.parse(startDate).getTime();
+            long end = new Date().getTime(); // 2nd date want to compare
+            long diff = (end - begin) / (MILLIS_PER_DAY);
+            setLog("Days_Ago", "days " + diff);
+            return (int) diff;
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return 0;
+    }
+    public static void updateAlertDialog(Context context, String title, String message, DialogInterface.OnClickListener negativeClickListener) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(context,
+                R.style.Theme_AppCompat_DayNight_Dialog));
+        alertDialogBuilder.setTitle(title);
+        alertDialogBuilder.setMessage(message);
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setNegativeButton(R.string.close, negativeClickListener);
+        alertDialogBuilder.show();
+    }
 }
