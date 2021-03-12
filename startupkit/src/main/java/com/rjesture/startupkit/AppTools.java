@@ -265,7 +265,7 @@ public class AppTools {
         }
     }
 
-    public static void showGifDialog(Activity activity, Drawable drawable_icon) {
+    public static void showGifDialog(Activity activity, int gif_icon_id) {
 
         dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -276,7 +276,7 @@ public class AppTools {
 
         //...initialize the imageView form infalted layout
         ImageView gifImageView = dialog.findViewById(R.id.custom_loading_imageView);
-        Glide.with(activity).asGif().load(drawable_icon).into(gifImageView);
+        Glide.with(activity).asGif().load(gif_icon_id).into(gifImageView);
 
         //...finaly show it
         dialog.show();
