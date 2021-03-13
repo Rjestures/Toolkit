@@ -1,4 +1,4 @@
-package com.rjesture.startupkit;
+package com.rjesture.startupkit.utils;
 
 import android.content.Context;
 import android.net.Uri;

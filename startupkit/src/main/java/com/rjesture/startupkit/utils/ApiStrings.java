@@ -1,4 +1,4 @@
-package com.rjesture.startupkit;
+package com.rjesture.startupkit.utils;
 
 public class ApiStrings {
     public static String apiUrl;
