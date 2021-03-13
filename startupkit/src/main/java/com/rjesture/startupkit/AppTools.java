@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.IBinder;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -88,7 +89,7 @@ public class AppTools {
     }
 
 
-    public String getJsonObjectString(JSONObject jsonObject, String key){
+    public static String getJsonObjectString(JSONObject jsonObject, String key){
         try {
             return jsonObject.has(key)? jsonObject.get(key).toString(): "";
         } catch (JSONException e) {
@@ -311,6 +312,26 @@ public class AppTools {
         }
         return latestVersion;
     }
+
+    @SuppressLint("MissingPermission")
+    public static String getUniqueIMEIId(Context context) {
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            String imei = telephonyManager.getDeviceId();
+            setLog("imei", "=" + imei);
+            if (imei != null && !imei.isEmpty()) {
+                return imei;
+            } else {
+                return android.os.Build.SERIAL;
+            }
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return "not_found";
+    }
+
+
+
 
     public static void hideGifDialog() {
         dialog.dismiss();
