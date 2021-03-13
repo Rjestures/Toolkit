@@ -88,9 +88,9 @@ public class AppTools {
     }
 
 
-    public String getObjectString(JSONObject jsonObject, String key){
+    public String getJsonObjectString(JSONObject jsonObject, String key){
         try {
-            return jsonObject.has(key)? jsonObject.getString(key): "";
+            return jsonObject.has(key)? jsonObject.get(key).toString(): "";
         } catch (JSONException e) {
             handleCatch(e);
         }
