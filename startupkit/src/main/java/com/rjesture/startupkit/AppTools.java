@@ -30,6 +30,9 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.DrawableImageViewTarget;
 import com.google.android.material.textfield.TextInputEditText;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -52,7 +55,7 @@ public class AppTools {
 
     public static void setLog(String title, String message) {
         try {
-            Log.v(title, message);
+            Log.v(title," "+ message);
         } catch (Exception e) {
             handleCatch(e);
         }
@@ -64,7 +67,7 @@ public class AppTools {
 
     public static void setLog(String title, String message, Throwable throwable) {
         try {
-            Log.v(title, message, throwable);
+            Log.v(title," "+  message, throwable);
         } catch (Exception e) {
             handleCatch(e);
         }
@@ -82,6 +85,16 @@ public class AppTools {
         AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
         return alertDialog;
+    }
+
+
+    public String getObjectString(JSONObject jsonObject, String key){
+        try {
+            return jsonObject.has(key)? jsonObject.getString(key): "";
+        } catch (JSONException e) {
+            handleCatch(e);
+        }
+        return "";
     }
 
     public static void showToast(Context context, String text) {
