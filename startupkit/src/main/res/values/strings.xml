@@ -2,4 +2,6 @@
 <resources>
     <string name="please_wait">Please Wait</string>
     <string name="close">Close</string>
+    <string name="gps_network_not_enabled">Couldn\'t find your location</string>
+    <string name="open_location_settings">Open location settings</string>
 </resources>

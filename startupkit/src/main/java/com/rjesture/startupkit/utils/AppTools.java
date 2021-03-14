@@ -7,10 +7,13 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -369,6 +372,31 @@ public class AppTools {
         return "not_found";
     }
 
+    public static boolean isLocationEnabled(Context context) {
+        try {
+            LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            boolean gps_enabled = false;
+            boolean network_enabled = false;
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if (!gps_enabled && !network_enabled) {
+                // notify user
+                new AlertDialog.Builder(context)
+                        .setMessage(R.string.gps_network_not_enabled)
+                        .setPositiveButton(R.string.open_location_settings, (paramDialogInterface, paramInt) -> {
+                            context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        })
+                        .setCancelable(false)
+                        .show();
+            } else {
+                return true;
+            }
+        } catch (Exception ex) {
+            handleCatch(ex);
+        }
+        return false;
+    }
 
     public static void hideGifDialog() {
         dialog.dismiss();
