@@ -25,10 +25,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
 import com.rjesture.startupkit.R;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -92,7 +95,7 @@ public class AppTools {
     }
 
 
-    public static String getJsonObjectString(JSONObject jsonObject, String key) {
+    public static String retrieveJSONString(JSONObject jsonObject, String key) {
         try {
             return jsonObject.has(key) ? jsonObject.get(key).toString() : "";
         } catch (JSONException e) {
@@ -101,13 +104,29 @@ public class AppTools {
         return "";
     }
 
-    public static String getJsonObjectString(JSONObject jsonObject, String key, String defaultValue) {
+    public static String retrieveJSONString(JSONObject jsonObject, String key, String defaultValue) {
         try {
             return jsonObject.has(key) ? jsonObject.get(key).toString() : defaultValue;
         } catch (JSONException e) {
             handleCatch(e);
         }
         return defaultValue;
+    }
+    public static JSONObject retrieveJSONObject(JSONObject jsonObject, String key) {
+        try {
+            return jsonObject.has(key) ? jsonObject.getJSONObject(key) : null;
+        } catch (JSONException e) {
+            handleCatch(e);
+        }
+        return null;
+    }
+    public static JSONArray retrieveJSONArray(JSONObject jsonObject, String key) {
+        try {
+            return jsonObject.has(key) ? jsonObject.getJSONArray(key) : null;
+        } catch (JSONException e) {
+            handleCatch(e);
+        }
+        return null;
     }
 
     public static void showToast(Context context, String text) {
@@ -424,6 +443,57 @@ public class AppTools {
         } catch (Exception e) {
             handleCatch(e);
         }
+    }
+
+    private static double getDisplacementMiles(@NonNull double lat1,@NonNull  double lon1,
+                                               @NonNull  double lat2,@NonNull  double lon2) {
+        try {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(deg2rad(lat1))
+                    * Math.sin(deg2rad(lat2))
+                    + Math.cos(deg2rad(lat1))
+                    * Math.cos(deg2rad(lat2))
+                    * Math.cos(deg2rad(theta));
+            dist = Math.acos(dist);
+            dist = rad2deg(dist);
+            dist = dist * 60 * 1.1515;
+            return (dist);
+        }catch (Exception e){
+            handleCatch(e);
+        }
+        return 0.0;
+    }
+    private static double deg2rad(@NonNull double deg) {
+      try{
+        return (deg * Math.PI / 180.0);
+    }catch (Exception e){
+        handleCatch(e);
+    }
+        return 0.0;}
+
+    private static double rad2deg(@NonNull double rad) {
+       try{
+        return (rad * 180.0 / Math.PI);
+       }catch (Exception e){
+           handleCatch(e);
+       }
+        return 0.0;}
+
+    private static double milesToKm(@NonNull Double miles){
+        try{
+            return  miles*1.609344;
+        }catch (Exception e){
+            handleCatch(e);
+        }
+        return 0.0;
+    }
+    private static double kmToMiles(@NonNull Double kilometers){
+        try{
+            return  kilometers/1.609344;
+        }catch (Exception e){
+            handleCatch(e);
+        }
+        return 0.0;
     }
 
 
