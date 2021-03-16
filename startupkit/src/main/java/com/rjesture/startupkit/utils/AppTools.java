@@ -75,6 +75,7 @@ public class AppTools {
         }
     }
 
+
     public static AlertDialog showAlertDialog(Context context, String title, String message, String positiveLabel,
                                               DialogInterface.OnClickListener positiveClick, String negativeLabel,
                                               DialogInterface.OnClickListener negativeClick, boolean isCancelable) {
