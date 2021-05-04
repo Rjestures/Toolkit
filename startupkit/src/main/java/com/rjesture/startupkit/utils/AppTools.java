@@ -94,6 +94,9 @@ public class AppTools {
         return null;
     }
 
+    public static String getColoredSpanned(String text, String color) {
+        return "<font color=" + color + ">" + text + "</font>";
+    }
 
     public static String retrieveJSONString(JSONObject jsonObject, String key) {
         try {
