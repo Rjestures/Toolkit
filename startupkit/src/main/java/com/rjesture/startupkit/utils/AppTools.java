@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -78,12 +79,14 @@ public class AppTools {
         return "http://img.youtube.com/vi/" + getYoutubeVideoIdFromUrl(videoUrl) + "/0.jpg";
     }
 
-    public static String makeDoubleDigit(int digit){
-        return digit < 10 ? "0" : "";
+    public static String showDoubleDigit(int digit){
+        String finalDig=(digit < 10 ? "0" : "")+digit;
+        return finalDig;
     }
 
-    public static String makeDoubleDigit(long digit){
-        return digit < 10 ? "0" : "";
+    public static String showDoubleDigit(long digit){
+        String finalDig=(digit < 10 ? "0" : "")+digit;
+        return finalDig;
     }
 
     public static String getYoutubeVideoIdFromUrl(String inUrl) {
@@ -110,6 +113,42 @@ public class AppTools {
             handleCatch(e);
         }
     }
+    public static int checkTimeSlot(){
+        try {
+            Calendar c = Calendar.getInstance();
+            int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+            if (timeOfDay >= 0 && timeOfDay < 12) {
+                return 1;
+            } else if (timeOfDay >= 12 && timeOfDay < 16) {
+                return 2;
+            } else if (timeOfDay >= 16 && timeOfDay < 21) {
+                return 3;
+            } else if (timeOfDay >= 21 && timeOfDay < 24) {
+                return 4;
+            }
+        }catch (Exception e){
+            handleCatch(e);
+        }
+        return 0;
+    }
+    public static String checkTimeMessage(int code){
+        try {
+            switch (code){
+                case 1:
+                    return "Good Morning";
+                case 2:
+                    return "Good Afternoon";
+                case 3:
+                    return "Good Evening";
+                case 4:
+                    return "Good Night";
+            }
+        }catch (Exception e){
+            handleCatch(e);
+        }
+        return "error";
+    }
+
 
     public static AlertDialog showAlertDialog(Context context, String title, String message, String positiveLabel,
                                               DialogInterface.OnClickListener positiveClick, String negativeLabel,
@@ -222,9 +261,7 @@ public class AppTools {
             Date date = formatter.parse(oldDate);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
-
             calendar.add(Calendar.DAY_OF_MONTH, days);
-
             System.out.println("Cool" + formatter.format(calendar.getTime()));
             return formatter.format(calendar.getTime());
         } catch (ParseException e) {
@@ -257,6 +294,28 @@ public class AppTools {
         activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
+    public static void shareApplication(Context context,String appName) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(Intent.EXTRA_TEXT, "*" + appName+" App" + "*" + "\n" + "Hi There!\n" +
+                "Download the "+appName+" app and register yourself. \n" +
+                "Download link - https://play.google.com/store/apps/details?id=" + context.getPackageName() + "\n" +
+                "Hava a nice day!\n" +
+                appName+" Operation Team");
+        context.startActivity(Intent.createChooser(sharingIntent, "Share via"));
+    }
+
+    public static void rateApplication(Context context) {
+        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName())));
+    }
+
+    public static void shareToBrowser(Context context, String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        context.startActivity(i);
+
+    }
+
     @SuppressLint("NewApi")
     public static void backToExit(Activity mActivity) {
         if (doubleBackToExitPressedOnce) {
@@ -266,7 +325,16 @@ public class AppTools {
         doubleBackToExitPressedOnce = true;
         showToast(mActivity, "Press again to exit");
         new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
-
+    }
+    @SuppressLint("NewApi")
+    public static void backToExit(Activity mActivity,String message) {
+        if (doubleBackToExitPressedOnce) {
+            mActivity.finishAffinity();
+            return;
+        }
+        doubleBackToExitPressedOnce = true;
+        showToast(mActivity, message);
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
     }
 
     public static boolean isEmailValid(String email) {

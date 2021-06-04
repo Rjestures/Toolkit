@@ -13,6 +13,9 @@ public class DateFactory {
     public DateFactory(String pattern) {
         patternFormat = pattern.isEmpty() ? "dd-MMM-yyyy hh:mm aa" : pattern;
     }
+    public String convertEpochDate(String timestamp){
+        return Long.toString(Long.parseLong(timestamp)*1000);
+    }
 
     public String readTimeStampDate(String timeStampDate) {
         try {
