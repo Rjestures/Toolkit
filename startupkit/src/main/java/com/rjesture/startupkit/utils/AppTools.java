@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,10 +15,14 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.Spannable;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -26,9 +32,11 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
@@ -66,6 +74,15 @@ public class AppTools {
         }
     }
 
+    public static void setLog(String title, String message, Throwable throwable) {
+        try {
+            Log.v(title, " " + message, throwable);
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+    }
+
+
     public static int dpToPx(int dp, Context context) {
         Resources r = context.getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
@@ -79,13 +96,13 @@ public class AppTools {
         return "http://img.youtube.com/vi/" + getYoutubeVideoIdFromUrl(videoUrl) + "/0.jpg";
     }
 
-    public static String showDoubleDigit(int digit){
-        String finalDig=(digit < 10 ? "0" : "")+digit;
+    public static String showDoubleDigit(int digit) {
+        String finalDig = (digit < 10 ? "0" : "") + digit;
         return finalDig;
     }
 
-    public static String showDoubleDigit(long digit){
-        String finalDig=(digit < 10 ? "0" : "")+digit;
+    public static String showDoubleDigit(long digit) {
+        String finalDig = (digit < 10 ? "0" : "") + digit;
         return finalDig;
     }
 
@@ -103,17 +120,7 @@ public class AppTools {
         return null;
     }
 
-
-
-
-    public static void setLog(String title, String message, Throwable throwable) {
-        try {
-            Log.v(title, " " + message, throwable);
-        } catch (Exception e) {
-            handleCatch(e);
-        }
-    }
-    public static int checkTimeSlot(){
+    public static int checkTimeSlot() {
         try {
             Calendar c = Calendar.getInstance();
             int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
@@ -126,14 +133,15 @@ public class AppTools {
             } else if (timeOfDay >= 21 && timeOfDay < 24) {
                 return 4;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             handleCatch(e);
         }
         return 0;
     }
-    public static String checkTimeMessage(int code){
+
+    public static String checkTimeMessage(int code) {
         try {
-            switch (code){
+            switch (code) {
                 case 1:
                     return "Good Morning";
                 case 2:
@@ -143,7 +151,7 @@ public class AppTools {
                 case 4:
                     return "Good Night";
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             handleCatch(e);
         }
         return "error";
@@ -169,8 +177,57 @@ public class AppTools {
         return null;
     }
 
-    public static String getColoredSpanned(String text, String color) {
-        return "<font color=" + color + ">" + text + "</font>";
+    public static void setSpannableColor(TextView view, String fulltext, String subtext, int color) {
+        view.setText(fulltext, TextView.BufferType.SPANNABLE);
+        Spannable str = (Spannable) view.getText();
+        int i = fulltext.indexOf(subtext);
+        str.setSpan(new ForegroundColorSpan(color), i,
+                i + subtext.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    public static void openWhatsApp(Context context, String message, String reciverNumber) {
+        try {
+            if (AppTools.isValidPhone(reciverNumber)) {
+                String text = "Hello";// Replace with your message.
+                String toNumber = "91" + reciverNumber; // Replace with mobile phone number without +Sign or leading zeros, but with country code
+                //Suppose your country is India and your phone number is “xxxxxxxxxx”, then you need to send “91xxxxxxxxxx”.
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://api.whatsapp.com/send?phone=" + toNumber + "&text=" + text));
+                context.startActivity(intent);
+            } else {
+                showToast(context, "Phone number is invalid");
+            }
+        } catch (Exception e) {
+            AppTools.handleCatch(e);
+        }
+    }
+
+    public static void openWhatsApp(Context context, String message) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            Intent waIntent = new Intent(Intent.ACTION_SEND);
+            waIntent.setType("text/plain");
+            String text = message; // Replace with your own message.
+            PackageInfo info = pm.getPackageInfo("com.whatsapp", PackageManager.GET_META_DATA);
+            //Check if package exists or not. If not then code
+            //in catch block will be called
+            waIntent.setPackage("com.whatsapp");
+            waIntent.putExtra(Intent.EXTRA_TEXT, text);
+            context.startActivity(Intent.createChooser(waIntent, "Share with"));
+        } catch (Exception e) {
+            handleCatch(e, context, "WhatsApp not Installed");
+        }
+    }
+
+    public static void copyText(String text, Context context, String message) {
+        try {
+            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("text label", text);
+            clipboard.setPrimaryClip(clip);
+            showToast(context, message);
+        } catch (Exception e) {
+            handleCatch(e, context, "Unable to copy text");
+        }
     }
 
     public static String retrieveJSONString(JSONObject jsonObject, String key) {
@@ -190,6 +247,7 @@ public class AppTools {
         }
         return defaultValue;
     }
+
     public static JSONObject retrieveJSONObject(JSONObject jsonObject, String key) {
         try {
             return jsonObject.has(key) ? jsonObject.getJSONObject(key) : null;
@@ -198,6 +256,7 @@ public class AppTools {
         }
         return null;
     }
+
     public static JSONArray retrieveJSONArray(JSONObject jsonObject, String key) {
         try {
             return jsonObject.has(key) ? jsonObject.getJSONArray(key) : null;
@@ -217,11 +276,6 @@ public class AppTools {
         } catch (Exception e) {
             handleCatch(e);
         }
-    }
-
-    public static void handleCatch(Exception e, Context context) {
-        e.printStackTrace();
-        showToast(context, appError);
     }
 
     public static void setImgPicasso(String imgUrl, Context context, ImageView imgView) {
@@ -274,6 +328,15 @@ public class AppTools {
     public static void handleCatch(Exception e) {
         e.printStackTrace();
     }
+    public static void handleCatch(Exception e, Context context) {
+        e.printStackTrace();
+        showToast(context, appError);
+    }
+
+    public static void handleCatch(Exception e, Context context, String errorMessage) {
+        e.printStackTrace();
+        showToast(context, errorMessage);
+    }
 
     public static void hideSoftKeyboard(Activity activity) {
         if (activity != null) {
@@ -294,14 +357,14 @@ public class AppTools {
         activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
-    public static void shareApplication(Context context,String appName) {
+    public static void shareApplication(Context context, String appName) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, "*" + appName+" App" + "*" + "\n" + "Hi There!\n" +
-                "Download the "+appName+" app and register yourself. \n" +
+        sharingIntent.putExtra(Intent.EXTRA_TEXT, "*" + appName + " App" + "*" + "\n" + "Hi There!\n" +
+                "Download the " + appName + " app and register yourself. \n" +
                 "Download link - https://play.google.com/store/apps/details?id=" + context.getPackageName() + "\n" +
                 "Hava a nice day!\n" +
-                appName+" Operation Team");
+                appName + " Operation Team");
         context.startActivity(Intent.createChooser(sharingIntent, "Share via"));
     }
 
@@ -326,8 +389,9 @@ public class AppTools {
         showToast(mActivity, "Press again to exit");
         new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
     }
+
     @SuppressLint("NewApi")
-    public static void backToExit(Activity mActivity,String message) {
+    public static void backToExit(Activity mActivity, String message) {
         if (doubleBackToExitPressedOnce) {
             mActivity.finishAffinity();
             return;
@@ -481,22 +545,44 @@ public class AppTools {
         return latestVersion;
     }
 
+    public static void callToDial(String phoneNumber, Context context) {
+        if (AppTools.isValidPhone(phoneNumber)) {
+            Intent intent = new Intent(Intent.ACTION_DIAL);
+            intent.setData(Uri.parse("tel:" + phoneNumber));
+            context.startActivity(intent);
+        } else {
+            showToast(context, "Phone number is invalid");
+        }
+    }
+
     @SuppressLint("MissingPermission")
     public static String getUniqueIMEIId(Context context) {
-        try {
-            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            String imei = telephonyManager.getDeviceId();
-            setLog("imei", "=" + imei);
-            if (imei != null && !imei.isEmpty()) {
-                return imei;
-            } else {
-                return android.os.Build.SERIAL;
+        String myuniqueID = "";
+        int myversion = Integer.valueOf(android.os.Build.VERSION.SDK);
+        if (myversion < 23) {
+            WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = manager.getConnectionInfo();
+            myuniqueID = info.getMacAddress();
+            if (myuniqueID == null) {
+                TelephonyManager mngr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                    return "Permission not granted";
+                }
+                myuniqueID = mngr.getDeviceId();
             }
-        } catch (Exception e) {
-            handleCatch(e);
+        } else if (myversion > 23 && myversion < 29) {
+            TelephonyManager mngr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                return "Permission not granted";
+            }
+            myuniqueID = mngr.getDeviceId();
+        } else {
+            String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            myuniqueID = androidId;
         }
-        return "not_found";
+        return myuniqueID;
     }
+
 
     public static boolean isLocationEnabled(Context context) {
         try {
@@ -552,8 +638,8 @@ public class AppTools {
         }
     }
 
-    public static double getDisplacementMiles(@NonNull double lat1,@NonNull  double lon1,
-                                               @NonNull  double lat2,@NonNull  double lon2) {
+    public static double getDisplacementMiles(@NonNull double lat1, @NonNull double lon1,
+                                              @NonNull double lat2, @NonNull double lon2) {
         try {
             double theta = lon1 - lon2;
             double dist = Math.sin(deg2rad(lat1))
@@ -565,39 +651,43 @@ public class AppTools {
             dist = rad2deg(dist);
             dist = dist * 60 * 1.1515;
             return (dist);
-        }catch (Exception e){
+        } catch (Exception e) {
             handleCatch(e);
         }
         return 0.0;
     }
+
     public static double deg2rad(@NonNull double deg) {
-      try{
-        return (deg * Math.PI / 180.0);
-    }catch (Exception e){
-        handleCatch(e);
+        try {
+            return (deg * Math.PI / 180.0);
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return 0.0;
     }
-        return 0.0;}
 
     public static double rad2deg(@NonNull double rad) {
-       try{
-        return (rad * 180.0 / Math.PI);
-       }catch (Exception e){
-           handleCatch(e);
-       }
-        return 0.0;}
-
-    public static double milesToKm(@NonNull Double miles){
-        try{
-            return  miles*1.609344;
-        }catch (Exception e){
+        try {
+            return (rad * 180.0 / Math.PI);
+        } catch (Exception e) {
             handleCatch(e);
         }
         return 0.0;
     }
-    public static double kmToMiles(@NonNull Double kilometers){
-        try{
-            return  kilometers/1.609344;
-        }catch (Exception e){
+
+    public static double milesToKm(@NonNull Double miles) {
+        try {
+            return miles * 1.609344;
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return 0.0;
+    }
+
+    public static double kmToMiles(@NonNull Double kilometers) {
+        try {
+            return kilometers / 1.609344;
+        } catch (Exception e) {
             handleCatch(e);
         }
         return 0.0;
