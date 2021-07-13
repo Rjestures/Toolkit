@@ -1,8 +1,10 @@
 package com.rjesture.startupkit.utils;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import static com.rjesture.startupkit.utils.AppTools.handleCatch;
 import static com.rjesture.startupkit.utils.AppTools.setLog;
@@ -13,8 +15,9 @@ public class DateFactory {
     public DateFactory(String pattern) {
         patternFormat = pattern.isEmpty() ? "dd-MMM-yyyy hh:mm aa" : pattern;
     }
-    public String convertEpochDate(String timestamp){
-        return Long.toString(Long.parseLong(timestamp)*1000);
+
+    public String convertEpochDate(String timestamp) {
+        return Long.toString(Long.parseLong(timestamp) * 1000);
     }
 
     public String readTimeStampDate(String timeStampDate) {
@@ -51,11 +54,26 @@ public class DateFactory {
             SimpleDateFormat df = new SimpleDateFormat(patternFormat);
             String formattedDate = df.format(c);
             return formattedDate;
-        }catch (Exception e){
+        } catch (Exception e) {
             handleCatch(e);
         }
-        return  "";
+        return "";
     }
 
+    public String addDays(String oldDate, int days) {
+        DateFormat formatter = new SimpleDateFormat(patternFormat, Locale.US);
+        try {
+            Date date = formatter.parse(oldDate);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.DAY_OF_MONTH, days);
+            System.out.println("Cool" + formatter.format(calendar.getTime()));
+            return formatter.format(calendar.getTime());
+        } catch (Exception e) {
+            handleCatch(e);
+            System.out.println("Wrong date");
+        }
+        return "";
+    }
 
 }

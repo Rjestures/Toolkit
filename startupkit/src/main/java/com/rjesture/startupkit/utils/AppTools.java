@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
@@ -23,6 +25,7 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
+import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -46,11 +49,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,6 +65,7 @@ public class AppTools {
     static Dialog dialog;
     private static boolean doubleBackToExitPressedOnce;
 
+    //****************Log****************************************
     public static void setLog(String title, String message) {
         try {
             Log.v(title, " " + message);
@@ -82,28 +82,14 @@ public class AppTools {
         }
     }
 
-
-    public static int dpToPx(int dp, Context context) {
-        Resources r = context.getResources();
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
-    }
-
     public static void printMessage(String message) {
         System.out.println("Message :  " + message);
     }
 
+    //****************Log****************************************
+    //*******************************Youtube****************************************
     public static String getYoutubeThumbnailUrlFromVideoUrl(String videoUrl) {
         return "http://img.youtube.com/vi/" + getYoutubeVideoIdFromUrl(videoUrl) + "/0.jpg";
-    }
-
-    public static String showDoubleDigit(int digit) {
-        String finalDig = (digit < 10 ? "0" : "") + digit;
-        return finalDig;
-    }
-
-    public static String showDoubleDigit(long digit) {
-        String finalDig = (digit < 10 ? "0" : "") + digit;
-        return finalDig;
     }
 
     public static String getYoutubeVideoIdFromUrl(String inUrl) {
@@ -120,6 +106,8 @@ public class AppTools {
         return null;
     }
 
+    //*******************************Youtube****************************************
+    //*****************************TimeSlots****************************************
     public static int checkTimeSlot() {
         try {
             Calendar c = Calendar.getInstance();
@@ -157,38 +145,12 @@ public class AppTools {
         return "error";
     }
 
-
-    public static AlertDialog showAlertDialog(Context context, String title, String message, String positiveLabel,
-                                              DialogInterface.OnClickListener positiveClick, String negativeLabel,
-                                              DialogInterface.OnClickListener negativeClick, boolean isCancelable) {
-        try {
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
-            dialogBuilder.setTitle(title);
-            dialogBuilder.setCancelable(isCancelable);
-            dialogBuilder.setMessage(message);
-            dialogBuilder.setPositiveButton(positiveLabel, positiveClick);
-            dialogBuilder.setNegativeButton(negativeLabel, negativeClick);
-            AlertDialog alertDialog = dialogBuilder.create();
-            alertDialog.show();
-            return alertDialog;
-        } catch (Exception e) {
-            handleCatch(e);
-        }
-        return null;
-    }
-
-    public static void setSpannableColor(TextView view, String fulltext, String subtext, int color) {
-        view.setText(fulltext, TextView.BufferType.SPANNABLE);
-        Spannable str = (Spannable) view.getText();
-        int i = fulltext.indexOf(subtext);
-        str.setSpan(new ForegroundColorSpan(color), i,
-                i + subtext.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
+    //*****************************TimeSlots****************************************
+    //*****************************WhatsApp****************************************
     public static void openWhatsApp(Context context, String message, String reciverNumber) {
         try {
             if (AppTools.isValidPhone(reciverNumber)) {
-                String text = "Hello";// Replace with your message.
+                String text = message;// Replace with your message.
                 String toNumber = "91" + reciverNumber; // Replace with mobile phone number without +Sign or leading zeros, but with country code
                 //Suppose your country is India and your phone number is “xxxxxxxxxx”, then you need to send “91xxxxxxxxxx”.
                 Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -219,17 +181,8 @@ public class AppTools {
         }
     }
 
-    public static void copyText(String text, Context context, String message) {
-        try {
-            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("text label", text);
-            clipboard.setPrimaryClip(clip);
-            showToast(context, message);
-        } catch (Exception e) {
-            handleCatch(e, context, "Unable to copy text");
-        }
-    }
-
+    //*****************************WhatsApp****************************************
+    //*****************************Json****************************************
     public static String retrieveJSONString(JSONObject jsonObject, String key) {
         try {
             return jsonObject.has(key) ? jsonObject.get(key).toString() : "";
@@ -266,8 +219,129 @@ public class AppTools {
         return null;
     }
 
+    //*****************************Json****************************************
+    //*****************************Handle Catch****************************************
+    public static void handleCatch(Exception e) {
+        e.printStackTrace();
+    }
+
+    public static void handleCatch(Exception e, Context context) {
+        e.printStackTrace();
+        showToast(context, appError);
+    }
+
+    public static void handleCatch(Exception e, Context context, String errorMessage) {
+        e.printStackTrace();
+        showToast(context, errorMessage);
+    }
+
+    //*****************************Handle Catch****************************************
+    //*****************************Format Number****************************************
+    public static String showDoubleDigit(int digit) {
+        String finalDig = (digit < 10 ? "0" : "") + digit;
+        return finalDig;
+    }
+
+    public static String showDoubleDigit(long digit) {
+        String finalDig = (digit < 10 ? "0" : "") + digit;
+        return finalDig;
+    }
+
+    public static String setPrice(String price) {
+        return "₹ " + price;
+    }
+
+    public static String setPriceTotal(String price) {
+        return "₹ " + price + " /-";
+    }
+
+    public static String setPriceTotal(int price) {
+        return "₹ " + price + " /-";
+    }
+    public static String updateQuantity(String oldQuantity, int newQuantity) {
+        if ((oldQuantity.equalsIgnoreCase("0") || oldQuantity.equalsIgnoreCase("")) && newQuantity <= 0)
+            return "0";
+        return Integer.toString(Integer.parseInt(oldQuantity) + newQuantity);
+    }
+    public static int dpToPx(int dp, Context context) {
+        Resources r = context.getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
+    }
+    public static void setSpannableColor(TextView view, String fulltext, String subtext, int color) {
+        view.setText(fulltext, TextView.BufferType.SPANNABLE);
+        Spannable str = (Spannable) view.getText();
+        int i = fulltext.indexOf(subtext);
+        str.setSpan(new ForegroundColorSpan(color), i,
+                i + subtext.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    //*****************************Format Number****************************************
+    //*****************************Back To Exit****************************************
+    @SuppressLint("NewApi")
+    public static void backToExit(Activity mActivity) {
+        if (doubleBackToExitPressedOnce) {
+            mActivity.finishAffinity();
+            return;
+        }
+        doubleBackToExitPressedOnce = true;
+        showToast(mActivity, "Press again to exit");
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
+    }
+    @SuppressLint("NewApi")
+    public static void backToExit(Activity mActivity, String message) {
+        if (doubleBackToExitPressedOnce) {
+            mActivity.finishAffinity();
+            return;
+        }
+        doubleBackToExitPressedOnce = true;
+        showToast(mActivity, message);
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
+    }
+
+    //*****************************Back To Exit****************************************
+
+
+
+
+
+
+    public static AlertDialog showAlertDialog(Context context, String title, String message, String positiveLabel,
+                                              DialogInterface.OnClickListener positiveClick, String negativeLabel,
+                                              DialogInterface.OnClickListener negativeClick, boolean isCancelable) {
+        try {
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+            dialogBuilder.setTitle(title);
+            dialogBuilder.setCancelable(isCancelable);
+            dialogBuilder.setMessage(message);
+            dialogBuilder.setPositiveButton(positiveLabel, positiveClick);
+            dialogBuilder.setNegativeButton(negativeLabel, negativeClick);
+            AlertDialog alertDialog = dialogBuilder.create();
+            alertDialog.show();
+            return alertDialog;
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return null;
+    }
+
+
+
+    public static void copyText(String text, Context context, String message) {
+        try {
+            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("text label", text);
+            clipboard.setPrimaryClip(clip);
+            showToast(context, message);
+        } catch (Exception e) {
+            handleCatch(e, context, "Unable to copy text");
+        }
+    }
+
+
     public static void showToast(Context context, String text) {
         try {
+            if (context == null)
+                return;
             if (mToast != null && mToast.getView().isShown()) {
                 mToast.cancel();
             }
@@ -290,53 +364,7 @@ public class AppTools {
         }
     }
 
-    public static String setPrice(String price) {
-        return "₹ " + price;
-    }
 
-    public static String setPriceTotal(String price) {
-        return "₹ " + price + " /-";
-    }
-
-    public static String setPriceTotal(int price) {
-        return "₹ " + price + " /-";
-    }
-
-    public static String updateQuantity(String oldQuantity, int newQuantity) {
-        if ((oldQuantity.equalsIgnoreCase("0") || oldQuantity.equalsIgnoreCase("")) && newQuantity <= 0)
-            return "0";
-        return Integer.toString(Integer.parseInt(oldQuantity) + newQuantity);
-    }
-
-    public static String addDays(String oldDate, int days) {
-        DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-
-        try {
-            Date date = formatter.parse(oldDate);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            calendar.add(Calendar.DAY_OF_MONTH, days);
-            System.out.println("Cool" + formatter.format(calendar.getTime()));
-            return formatter.format(calendar.getTime());
-        } catch (ParseException e) {
-            System.out.println("Wrong date");
-        }
-        return "";
-    }
-
-
-    public static void handleCatch(Exception e) {
-        e.printStackTrace();
-    }
-    public static void handleCatch(Exception e, Context context) {
-        e.printStackTrace();
-        showToast(context, appError);
-    }
-
-    public static void handleCatch(Exception e, Context context, String errorMessage) {
-        e.printStackTrace();
-        showToast(context, errorMessage);
-    }
 
     public static void hideSoftKeyboard(Activity activity) {
         if (activity != null) {
@@ -379,27 +407,6 @@ public class AppTools {
 
     }
 
-    @SuppressLint("NewApi")
-    public static void backToExit(Activity mActivity) {
-        if (doubleBackToExitPressedOnce) {
-            mActivity.finishAffinity();
-            return;
-        }
-        doubleBackToExitPressedOnce = true;
-        showToast(mActivity, "Press again to exit");
-        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
-    }
-
-    @SuppressLint("NewApi")
-    public static void backToExit(Activity mActivity, String message) {
-        if (doubleBackToExitPressedOnce) {
-            mActivity.finishAffinity();
-            return;
-        }
-        doubleBackToExitPressedOnce = true;
-        showToast(mActivity, message);
-        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 1000);
-    }
 
     public static boolean isEmailValid(String email) {
         try {
@@ -692,6 +699,19 @@ public class AppTools {
         }
         return 0.0;
     }
+    //***********************************Image Util**********************************************
+    public static Bitmap stringToBitMap(String encodedString){
+        try {
+            byte [] encodeByte= Base64.decode(encodedString, Base64.DEFAULT);
+            Bitmap bitmap= BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+            return bitmap;
+        } catch(Exception e) {
+            e.getMessage();
+            return null;
+        }
+    }
+
+    //***********************************Image Util**********************************************
 
 
 }
