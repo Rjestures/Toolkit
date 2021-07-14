@@ -60,7 +60,6 @@ public class AppTools {
     private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
     private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
     private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
-    public static Toast mToast;
     static ProgressDialog progressDialog;
     static Dialog dialog;
     private static boolean doubleBackToExitPressedOnce;
@@ -338,15 +337,21 @@ public class AppTools {
     }
 
 
+    public static void showToastShort(Context context, String text) {
+        try {
+            if (context == null)
+                return;
+            Toast.makeText(context,text,Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+    }
+
     public static void showToast(Context context, String text) {
         try {
             if (context == null)
                 return;
-            if (mToast != null && mToast.getView().isShown()) {
-                mToast.cancel();
-            }
-            mToast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-            mToast.show();
+            Toast.makeText(context,text,Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             handleCatch(e);
         }
