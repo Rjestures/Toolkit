@@ -10,6 +10,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -21,6 +22,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
@@ -43,13 +45,18 @@ import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.rjesture.startupkit.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -258,7 +265,8 @@ public class AppTools {
         return "₹ " + price + " /-";
     }
     public static String updateQuantity(String oldQuantity, int newQuantity) {
-        if ((oldQuantity.equalsIgnoreCase("0") || oldQuantity.equalsIgnoreCase("")) && newQuantity <= 0)
+        if ((oldQuantity.equalsIgnoreCase("0") ||
+                oldQuantity.equalsIgnoreCase("")) && newQuantity <= 0)
             return "0";
         return Integer.toString(Integer.parseInt(oldQuantity) + newQuantity);
     }
@@ -374,7 +382,8 @@ public class AppTools {
     public static void hideSoftKeyboard(Activity activity) {
         if (activity != null) {
             try {
-                @SuppressLint("WrongConstant") InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService("input_method");
+                @SuppressLint("WrongConstant") InputMethodManager inputMethodManager =
+                        (InputMethodManager) activity.getSystemService("input_method");
                 View view = activity.getCurrentFocus();
                 if (view != null) {
                     IBinder binder = view.getWindowToken();
@@ -402,7 +411,8 @@ public class AppTools {
     }
 
     public static void rateApplication(Context context) {
-        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName())));
+        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="
+                + context.getPackageName())));
     }
 
     public static void shareToBrowser(Context context, String url) {
@@ -515,9 +525,47 @@ public class AppTools {
                 case 0:
                     return "";
                 case 1:
+                    return word.toLowerCase(Locale.getDefault()) + " ";
+                default:
+                    return Character.toLowerCase(word.charAt(0)) +
+                            word.substring(1).toUpperCase(Locale.getDefault()) + " ";
+            }
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return "";
+    }
+
+    public static String toPascalCaseSentence(String sentence) {
+        try {
+            if (sentence == null) {
+                return "";
+            }
+            String[] words = sentence.split(" ");
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String toPascalCase : words) {
+                stringBuilder.append(toPascalCaseWord(toPascalCase));
+            }
+            return stringBuilder.toString().trim();
+        } catch (Exception e) {
+            handleCatch(e);
+        }
+        return "";
+    }
+
+    public static String toPascalCaseWord(String word) {
+        try {
+            if (word == null) {
+                return "";
+            }
+            switch (word.length()) {
+                case 0:
+                    return "";
+                case 1:
                     return word.toUpperCase(Locale.getDefault()) + " ";
                 default:
-                    return Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase(Locale.getDefault()) + " ";
+                    return Character.toUpperCase(word.charAt(0)) +
+                            word.substring(1).toLowerCase(Locale.getDefault()) + " ";
             }
         } catch (Exception e) {
             handleCatch(e);
@@ -577,14 +625,16 @@ public class AppTools {
             myuniqueID = info.getMacAddress();
             if (myuniqueID == null) {
                 TelephonyManager mngr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE)
+                        != PackageManager.PERMISSION_GRANTED) {
                     return "Permission not granted";
                 }
                 myuniqueID = mngr.getDeviceId();
             }
         } else if (myversion > 23 && myversion < 29) {
             TelephonyManager mngr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE)
+                    != PackageManager.PERMISSION_GRANTED) {
                 return "Permission not granted";
             }
             myuniqueID = mngr.getDeviceId();
@@ -635,7 +685,8 @@ public class AppTools {
         return "";
     }
 
-    public static void updateAlertDialog(Context context, String title, String message, DialogInterface.OnClickListener negativeClickListener) {
+    public static void updateAlertDialog(Context context, String title, String message,
+                                         DialogInterface.OnClickListener negativeClickListener) {
         try {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(context,
                     R.style.Theme_AppCompat_DayNight_Dialog));
@@ -717,6 +768,30 @@ public class AppTools {
     }
 
     //***********************************Image Util**********************************************
+
+
+    /* Saving Array through Gson */
+
+    public static void saveArrayList(ArrayList<HashMap<String, String>> list, String key, Activity activity) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(list);
+        editor.putString(key, json);
+        editor.apply();
+    }
+
+    public static ArrayList<HashMap<String, String>> getArrayList(String key, Activity activity) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        Gson gson = new Gson();
+        String json = prefs.getString(key, null);
+        Type type = new TypeToken<ArrayList<HashMap<String, String>>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+
+    /* Saving Array through Gson */
 
 
 }
